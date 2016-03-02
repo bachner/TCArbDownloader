@@ -1,0 +1,50 @@
+# Configurations - Make sure the conf file is located in the right path
+conf_file=/c/Users/bachner/threatcentral/threatcentral.conf
+credentials=`grep credentials= $conf_file`
+credentials=${credentials:12}
+
+url=`grep url= $conf_file | cut -d= -f2`
+
+# Constants
+RED='\033[1;31m'
+LPURPLE='\033[1;35m'
+NC='\033[0m' # No Color
+
+# Functions
+FetchArbFromTC () {	
+	output_file=$(date "+indicators-${1^^}-%Y-%m-%dT%H-%M%z.arb.tmp")
+
+	curl -XGET -u $credentials --insecure -D - -H "Accept: application/octet-stream" "$url/rest/esm/indicators/$1" -o $output_file > response
+	response_header=`head -n1 response`
+	response_code=`head -n1 response | cut -d" " -f2`
+	response_msg=`head -n1 response | cut -d" " -f3-`
+	filename=`grep -E filename=indicators-\(.*\)\.arb response | awk '{print $2}' | cut -d= -f2`
+	filesize=`ls -l $output_file | awk '{print $5}'`
+	rm response
+
+	if [[ "$response_code" -eq 200 && "$filesize" -gt 0 ]]; then
+		ack=$(curl -XPOST -u $credentials -H "content-type: application/json" -H "accept: application/json" -s --basic $url/rest/esm/indicators/$1/acknowledge)
+	
+		if [ "$ack" == "true" ]; then
+			mv $output_file $filename
+			echo "$filename was successfully downloaded"
+			echo "Sent acknowledge for receiving ${1^^} ARB sucessfully"
+		else
+			echo -e "${RED}Error while acknowledging for ${1^^} ARB - check your credentials${NC}"
+			rm $output_file
+		fi
+	else
+		if [[ "$filesize" -eq 0 || "$response_code" -eq 304 ]]; then
+			echo "${1^^} ARB delta was found empty, maybe next time."
+			rm $output_file
+		else
+			cat response
+			echo -e "${RED}Error: $response_heallder ${NC}"
+		fi
+	fi
+}
+
+# Main code
+echo -e "${LPURPLE}Threat Central ARB downloader${NC} - Starting downloading from $url ..."
+FetchArbFromTC ip
+FetchArbFromTC domain
