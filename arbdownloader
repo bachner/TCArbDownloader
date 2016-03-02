@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # Functions
 FetchArbFromTC () {	
-	output_file=$(date "+indicators-${1^^}-%Y-%m-%dT%H-%M%z.arb.tmp")
+	output_file=$(date "+TC_download_${1}-%s.arb")
 
 	curl -XGET -u $credentials --insecure -D - -H "Accept: application/octet-stream" "$url/rest/esm/indicators/$1" -o $output_file > response
 	response_header=`head -n1 response`
@@ -26,7 +26,6 @@ FetchArbFromTC () {
 		ack=$(curl -XPOST -u $credentials -H "content-type: application/json" -H "accept: application/json" -s --basic $url/rest/esm/indicators/$1/acknowledge)
 	
 		if [ "$ack" == "true" ]; then
-			mv $output_file $filename
 			echo "$filename was successfully downloaded"
 			echo "Sent acknowledge for receiving ${1^^} ARB sucessfully"
 		else
