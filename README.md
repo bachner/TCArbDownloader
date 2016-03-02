@@ -6,7 +6,7 @@ This is a solution for those who have the Threat Central Model Import Connector 
 ##Setup
 1) Set an API key in the threatcentral.conf file.
 2) Specify the location of the threatcentral.conf file in the conf_file field in the arbdownloader file.
-2) Add the arbdownloader script to a cron-job to fetch the files every 5 minutes.
+3) Add the arbdownloader script to a cron-job to fetch the files every 5 minutes.
 
 ##DMZ side
 The script should be running from the DMZ with access to threatcentral.io domain on port 443.
