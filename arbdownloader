@@ -44,6 +44,6 @@ FetchArbFromTC () {
 }
 
 # Main code
-echo -e "${LPURPLE}Threat Central ARB downloader${NC} - Starting downloading from $url ..."
+echo -e "${LPURPLE}Threat Central ARB downloader${NC} - Start downloading from $url ..."
 FetchArbFromTC ip
 FetchArbFromTC domain
